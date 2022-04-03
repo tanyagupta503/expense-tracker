@@ -1,42 +1,71 @@
 import React from 'react';
-import Table from 'react-bootstrap/Table';
-import Button from 'react-bootstrap/Button';
+import { useDispatch } from 'react-redux';
+import { Table, Button } from 'react-bootstrap';
 import { capitalizeFirstLetter } from '../utils';
 import Moment from 'react-moment';
-import { FaTrash } from 'react-icons/fa';
+import { deleteExpense } from '../actions/expenseActions';
+import api from '../services/api';
+import DateFilter from './DateFilter';
+import useExpenseFilters from '../hooks/useExpenseFilters';
 
 const ExpenseList = () => {
+  const dispatch = useDispatch();
+  const expenseList = useExpenseFilters();
+  const deleteExpenseHandler = async (id) => {
+    const { data } = await api.delete('/', {
+      data: { expenseId: parseInt(id) },
+    });
+    if (data.message) {
+      alert('Error in Deleting Expense - ' + data.message);
+    } else {
+      dispatch(deleteExpense(id));
+    }
+  };
   return (
-    <Table hover>
-        <thead>
+    <>
+      <DateFilter></DateFilter>
+      {expenseList.length ? (
+        <Table hover>
+          <thead>
             <tr>
-            <th>#</th>
-            <th>Category</th>
-            <th>Expense Date</th>
-            <th>Amount</th>
-            <th>Action</th>
+              <th>#</th>
+              <th>Category</th>
+              <th>Expense Date</th>
+              <th>Amount</th>
+              <th>Action</th>
             </tr>
-        </thead>
-        <tbody>
-            <tr>
-            <td>1</td>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-            <td></td>
-            </tr>
-            <tr>
-            <td>2</td>
-            <td>{capitalizeFirstLetter("travel")}</td>
-            <td>
-                <Moment format="DD MMM YYYY">{"2019-01-28"}</Moment>
-            </td>
-            <td>200</td>
-            <td><Button variant="outline-danger" size="sm"><FaTrash className='me-1' /><span className="align-middle">Delete</span></Button></td>
-            </tr>
-        </tbody>
-    </Table>
-  )
-}
+          </thead>
+          <tbody>
+            {expenseList.map((expense) => (
+              <tr key={expense.expenseId?.N}>
+                <td>{expense.expenseId?.N}</td>
+                <td>{capitalizeFirstLetter(expense.expenseType?.S)}</td>
+                <td>
+                  {isNaN(Date.parse(expense.date?.S)) ? (
+                    <>{expense.date?.S}</>
+                  ) : (
+                    <Moment format='DD MMM YYYY'>{expense.date?.S}</Moment>
+                  )}
+                </td>
+                <td>Rs. {expense.expense?.N}</td>
+                <td>
+                  <Button
+                    variant='outline-danger'
+                    size='sm'
+                    onClick={() => deleteExpenseHandler(expense.expenseId?.N)}
+                  >
+                    <span className='align-middle'>Delete</span>
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <>No Expenses Found</>
+      )}
+    </>
+  );
+};
 
-export default ExpenseList
+export default ExpenseList;

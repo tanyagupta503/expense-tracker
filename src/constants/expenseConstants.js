@@ -1,0 +1,5 @@
+export const ADD_EXPENSE = 'ADD_EXPENSE';
+export const DELETE_EXPENSE = 'DELETE_EXPENSE';
+export const LOAD_EXPENSES = 'LOAD_EXPENSES';
+export const FETCH_EXPENSES = 'FETCH_EXPENSES';
+export const SET_FILTERS = 'SET_FILTERS';
